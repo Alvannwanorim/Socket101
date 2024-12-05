@@ -1,0 +1,76 @@
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+/>
+
+<style>
+  .container {
+    margin-top: 30px;
+  }
+  input {
+    height: 35px;
+    width: 100%;
+  }
+  #messages {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+  #messages li {
+    padding: 5px 10px;
+  }
+  #message li:nth-child(odd) {
+    background: #aaa;
+  }
+</style>
+
+<div class="container text-center">
+  <form class="row" id="message-form">
+    <div class="col-6">
+      <input id="user-message" type="text" placeholder="Enter your message" />
+    </div>
+    <div class="col-2">
+      <input class="btn btn-primary" type="submit" value="Send!" />
+    </div>
+  </form>
+
+  <ul id="messages">
+    <!-- THIS WILL BE POPULATED BY JAVASCRIPT! -->
+  </ul>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io("http://localhost:9001");
+  const adminSocket = io("http://localhost:9001/admin");
+
+  socket.on("connect", () => {
+    console.log("successfully joined the main ns");
+  });
+
+  socket.on("welcomeToChatRoom", () => {
+    console.log("joined chat room");
+  });
+
+  socket.on("messageFromServer", (data) => {
+    console.log(data);
+  });
+
+  adminSocket.on("connect", () => {
+    console.log("successfully joined  admin ns");
+  });
+
+  document
+    .querySelector("#message-form")
+    .addEventListener("submit", (event) => {
+      event.preventDefault();
+      //   console.log("here");
+      const message = document.querySelector("#user-message").value;
+      //   console.log(message);
+      socket.emit("newMessageFromClient", { text: message });
+    });
+
+  socket.on("newMessageToClient", (data) => {
+    document.querySelector("#messages").innerHTML += `<li>${data.text}</li>`;
+  });
+</script>
